@@ -511,7 +511,7 @@
                         console.log("Sending Ice candidates");
 
                         socket.emit("signalingMessage", {
-                            room, 
+                            room,
                             message: JSON.stringify({
                                 type: "candidate",
                                 candidate: event.candidate
@@ -525,27 +525,30 @@
                 }
             }
 
-            const handleSignalingMessage = async(message) => {
+            const handleSignalingMessage = async (message) => {
                 const { type, offer, answer, candidate } = JSON.parse(message);
 
-                if(type === "offer") handleOffer(offer);
-                if(type === "answer") handleAnswer(answer);
-                if(type === "candidate" && peerConnection) {
-                    try{
+                if (type === "offer") handleOffer(offer);
+                if (type === "answer") handleAnswer(answer);
+                if (type === "candidate" && peerConnection) {
+                    try {
                         await peerConnection.addIceCandidate(candidate)
-                    } catch(err) {
+                    } catch (err) {
                         console.log(err)
                     }
                 }
 
-                if(type === "hangup") {
+                if (type === "hangup") {
                     hangup();
                 }
             }
 
-            const handleOffer = async(offer) => {
+            const handleOffer = async (offer) => {
+                if (peerConnection || inCall) {
+                    cleanupCall();
+                }
                 await createPeerConnection();
-                try{
+                try {
                     await peerConnection.setRemoteDescription(offer);
                     const answer = await peerConnection.createAnswer();
                     await peerConnection.setLocalDescription(answer)
@@ -556,19 +559,24 @@
                             answer
                         })
                     })
-                } catch(err) {
+                } catch (err) {
                     console.log("Failed to handle offer", err);
                 }
             }
 
             const handleAnswer = async (answer) => {
                 console.log(answer);
-                try{
+                try {
                     await peerConnection.setRemoteDescription(answer);
-                } catch(err) {
+                } catch (err) {
                     console.log("Failed to handle answer", err);
                 }
             }
+
+            socket.on("peerLeft", () => {
+                console.log("Peer left the call");
+                cleanupCall();
+            });
 
             document.querySelector("#video-call-btn").addEventListener("click", () => {
                 socket.emit("startVideoCall", room)
@@ -588,16 +596,48 @@
             })
 
             const hangup = () => {
-                if(peerConnection){
+                if (peerConnection) {
                     peerConnection.close();
                     peerConnection = null;
                     localStream.getTracks().forEach((track) => track.stop());
 
                     document.querySelector(".videoblock").classList.add("hidden");
-                    socket.emit("signalingMessage", { room, message: JSON.stringify({ type: "hangup" })});
+                    socket.emit("signalingMessage", { room, message: JSON.stringify({ type: "hangup" }) });
                 }
             }
-            
+
+            const cleanupCall = () => {
+                console.log("Cleaning up call...");
+
+                if (peerConnection) {
+                    peerConnection.ontrack = null;
+                    peerConnection.onicecandidate = null;
+                    peerConnection.onconnectionstatechange = null;
+                    peerConnection.close();
+                    peerConnection = null;
+                }
+
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                    localStream = null;
+                }
+
+                if (remoteStream) {
+                    remoteStream.getTracks().forEach(track => track.stop());
+                    remoteStream = null;
+                }
+
+                localVideo.srcObject = null;
+                remoteVideo.srcObject = null;
+
+                inCall = false;
+            };
+
+            window.addEventListener("beforeunload", () => {
+                socket.emit("leaveCall", room);
+                cleanupCall();
+            });
+
             document.querySelector("#accept-call")
                 .addEventListener("click", () => {
                     document.querySelector("#incoming-call").classList.add("hidden");
