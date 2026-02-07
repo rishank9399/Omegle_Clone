@@ -473,7 +473,7 @@
                 await createPeerConnection();
                 try {
                     const offer = await peerConnection.createOffer();
-                    peerConnection.setLocalDescription(offer);
+                    await peerConnection.setLocalDescription(offer);
 
                     socket.emit("signalingMessage", {
                         room,

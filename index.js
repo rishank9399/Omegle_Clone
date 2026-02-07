@@ -50,8 +50,8 @@ io.on("connection", (socket) => {
     socket.broadcast.to(room).emit("callRejected");
   });
 
-  socket.on("disconnect", (Socket) => {
-    let index = waitingUsers.findIndex((user) => user.id === Socket.id);
+  socket.on("disconnect", () => {
+    let index = waitingUsers.findIndex((user) => user.id === socket.id);
     waitingUsers.splice(index, 1);
   });
 
