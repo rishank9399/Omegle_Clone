@@ -544,7 +544,7 @@
             }
 
             const handleOffer = async (offer) => {
-                if (peerConnection || inCall) {
+                if (peerConnection) {
                     cleanupCall();
                 }
                 await createPeerConnection();
