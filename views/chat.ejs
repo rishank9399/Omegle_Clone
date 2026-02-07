@@ -573,11 +573,6 @@
                 }
             }
 
-            socket.on("peerLeft", () => {
-                console.log("Peer left the call");
-                cleanupCall();
-            });
-
             document.querySelector("#video-call-btn").addEventListener("click", () => {
                 socket.emit("startVideoCall", room)
             })
@@ -605,38 +600,6 @@
                     socket.emit("signalingMessage", { room, message: JSON.stringify({ type: "hangup" }) });
                 }
             }
-
-            const cleanupCall = () => {
-                console.log("Cleaning up call...");
-
-                if (peerConnection) {
-                    peerConnection.ontrack = null;
-                    peerConnection.onicecandidate = null;
-                    peerConnection.onconnectionstatechange = null;
-                    peerConnection.close();
-                    peerConnection = null;
-                }
-
-                if (localStream) {
-                    localStream.getTracks().forEach(track => track.stop());
-                    localStream = null;
-                }
-
-                if (remoteStream) {
-                    remoteStream.getTracks().forEach(track => track.stop());
-                    remoteStream = null;
-                }
-
-                localVideo.srcObject = null;
-                remoteVideo.srcObject = null;
-
-                inCall = false;
-            };
-
-            window.addEventListener("beforeunload", () => {
-                socket.emit("leaveCall", room);
-                cleanupCall();
-            });
 
             document.querySelector("#accept-call")
                 .addEventListener("click", () => {

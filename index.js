@@ -54,11 +54,6 @@ io.on("connection", (socket) => {
     let index = waitingUsers.findIndex((user) => user.id === socket.id);
     waitingUsers.splice(index, 1);
   });
-
-  socket.on("leaveCall", (room) => {
-    socket.leave(room);
-    socket.broadcast.to(room).emit("peerLeft");
-  });
 });
 
 app.use("/", indexRouter);
