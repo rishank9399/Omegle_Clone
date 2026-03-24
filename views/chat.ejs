@@ -130,7 +130,7 @@
         <video id="local-video" class="hidden" autoplay></video>
         <video id="remote-video" class="hidden" autoplay></video>
 
-        <!-- <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"
+        <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"
             integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO"
             crossorigin="anonymous"></script>
 
@@ -371,9 +371,9 @@
                     inCall = false;
                 }
             }
-        </script> -->
+        </script>
 
-        <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"
+        <!-- <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"
             integrity="sha384-kzavj5fiMwLKzzD1f8S7TeoVIEi7uKHvbTA3ueZkrzYq75pNQUiUi6Dy98Q3fxb0"
             crossorigin="anonymous"></script>
 
@@ -450,7 +450,7 @@
             };
 
             let initialize = async () => {
-                socket.on("signalingMessage", handleSignalingMessage);
+                socket.on("signalingMessage", handleSignalingMessage); // to review
 
                 try {
                     localStream = await navigator.mediaDevices.getUserMedia({
@@ -543,9 +543,9 @@
             }
 
             const handleOffer = async (offer) => {
-                if (peerConnection) {
-                    cleanupCall();
-                }
+                // if (peerConnection) {
+                //     cleanupCall();
+                // }
                 await createPeerConnection();
                 try {
                     await peerConnection.setRemoteDescription(offer);
@@ -564,7 +564,7 @@
             }
 
             const handleAnswer = async (answer) => {
-                console.log(answer);
+                console.log("answer", answer);
                 try {
                     await peerConnection.setRemoteDescription(answer);
                 } catch (err) {
@@ -585,6 +585,20 @@
                 document.querySelector(".videoblock").classList.remove("hidden");
             })
 
+            document.querySelector("#accept-call")
+                .addEventListener("click", () => {
+                    document.querySelector("#incoming-call").classList.add("hidden");
+                    initialize();
+                    document.querySelector(".videoblock").classList.remove("hidden");
+                    socket.emit("acceptCall", { room })
+                })
+
+            document.querySelector("#reject-call")
+                .addEventListener("click", () => {
+                    document.querySelector("#incoming-call").classList.add("hidden");
+                    socket.emit("rejectCall", { room })
+                })
+
             socket.on("callRejected", () => {
                 alert("Call rejected by other user");
             })
@@ -597,29 +611,16 @@
 
                     document.querySelector(".videoblock").classList.add("hidden");
                     socket.emit("signalingMessage", { room, message: JSON.stringify({ type: "hangup" }) });
+                    inCall = false;
                 }
             }
-
-            document.querySelector("#accept-call")
-                .addEventListener("click", () => {
-                    document.querySelector("#incoming-call").classList.add("hidden");
-                    initialize();
-                    document.querySelector(".videoblock").classList.remove("hidden");
-                    socket.emit("acceptCall", room);
-                })
-
-            document.querySelector("#reject-call")
-                .addEventListener("click", () => {
-                    document.querySelector("#incoming-call").classList.add("hidden");
-                    socket.emit("rejectCall", room);
-                })
 
             document.querySelector("#hangup")
                 .addEventListener("click", () => {
                     hangup();
                 })
 
-        </script>
+        </script> -->
 </body>
 
 </html>

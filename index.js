@@ -34,19 +34,20 @@ io.on("connection", (socket) => {
     socket.broadcast.to(data.room).emit("message", data.message);
   });
 
+  // WebRTC signaling events
   socket.on("signalingMessage", (data) => {
     socket.broadcast.to(data.room).emit("signalingMessage", data.message);
   });
 
-  socket.on("startVideoCall", (room) => {
+  socket.on("startVideoCall", ({room}) => {
     socket.broadcast.to(room).emit("incomingCall");
   });
 
-  socket.on("acceptCall", (room) => {
+  socket.on("acceptCall", ({room}) => {
     socket.broadcast.to(room).emit("callAccepted");
   });
 
-  socket.on("rejectCall", (room) => {
+  socket.on("rejectCall", ({room}) => {
     socket.broadcast.to(room).emit("callRejected");
   });
 
