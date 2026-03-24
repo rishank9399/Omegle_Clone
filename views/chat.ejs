@@ -207,7 +207,7 @@
                 iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
             };
 
-            const initialize = async () => {
+            const initialize = async (isCaller = false) => {
                 socket.on("signalingMessage", handleSignalingMessage);
 
                 try {
@@ -218,8 +218,9 @@
                     document.querySelector("#localVideo").srcObject = localStream;
                     document.querySelector("#localVideo").style.display = "block";
 
-                    initiateOffer();
-
+                    if(isCaller){
+                        initiateOffer();
+                    }
                     inCall = true;
                 }
                 catch (err) {
@@ -319,6 +320,10 @@
                     console.error("PeerConnection not initialized");
                     return;
                 }
+                if (peerConnection.signalingState !== "have-local-offer") {
+                    console.warn("Invalid state for answer:", peerConnection.signalingState);
+                    return;
+                }
                 try {
                     await peerConnection.setRemoteDescription(answer);
                 }
@@ -339,14 +344,14 @@
             })
 
             socket.on("callAccepted", function () {
-                initialize();
+                initialize(true);
                 document.querySelector(".videoblock").classList.remove("hidden");
             })
 
             document.querySelector("#accept-call")
                 .addEventListener("click", function () {
                     document.querySelector("#incoming-call").classList.add("hidden");
-                    initialize();
+                    initialize(false);
                     document.querySelector(".videoblock").classList.remove("hidden");
                     socket.emit("acceptCall", { room })
                 })
