@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const indexRouter = require("./routes/indexRouter");
 const path = require("path");
@@ -59,4 +60,6 @@ io.on("connection", (socket) => {
 
 app.use("/", indexRouter);
 
-server.listen(process.env.PORT || 3000);
+server.listen(process.env.PORT || 8080, () => {
+  console.log("Server started successfully")
+});
